@@ -43,6 +43,8 @@ class RangerRobot : public RobotCommonInterface, public RangerInterface {
 
   // robot control
   void SetMotionMode(uint8_t mode) override;
+  void SetMiddleBoxMode(uint8_t mode) override;
+  void SetLiftMode(uint8_t mode) override;
   void SetMotionCommand(double linear_vel, double steer_angle,
                         double angular_vel = 0.0) override;
   void SetLightCommand(AgxLightMode f_mode, uint8_t f_value,
@@ -52,6 +54,7 @@ class RangerRobot : public RobotCommonInterface, public RangerInterface {
   RangerCoreState GetRobotState() override;
   RangerActuatorState GetActuatorState() override;
   RangerCommonSensorState GetCommonSensorState() override;
+  GoleDeviceState GetGoleDeviceState() override;
 
  private:
   RobotCommonInterface* robot_;

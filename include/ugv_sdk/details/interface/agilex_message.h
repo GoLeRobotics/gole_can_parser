@@ -44,6 +44,14 @@ typedef struct {
   uint8_t motion_mode;
 } MotionModeCommandMessage;
 
+typedef struct {
+  uint8_t middle_box_mode;
+} MiddleBoxModeCommandMessage;
+
+typedef struct {
+  uint8_t lift_mode;
+} LiftModeCommandMessage;
+
 // V1-only messages
 typedef struct {
   AgxControlMode control_mode;
@@ -129,6 +137,27 @@ typedef struct {
   uint8_t motion_mode;
   uint8_t mode_changing;
 } MotionModeStateMessage;
+
+// for middle box
+typedef struct {
+  uint8_t motion_mode;
+  uint8_t mode_changing;
+} MiddleBoxStateMessage;
+
+// for lift
+typedef struct {
+  uint8_t motion_mode;
+  uint8_t mode_changing;
+  float battery_voltage;
+} LiftStateMessage;
+
+typedef struct {
+  uint8_t heartbeat_count;
+} LiftHeartbeatMessage;
+
+typedef struct {
+  int32_t device_enable_status;
+} LiftEnableMessage;
 
 // V1-only messages
 typedef struct {
@@ -283,12 +312,15 @@ typedef enum {
   AgxMsgLightCommand,
   AgxMsgBrakingCommand,
   AgxMsgSetMotionModeCommand,
+  AgxMsgSetMiddleBoxModeCommand,
+  AgxMsgSetLiftModeCommand,
   // state feedback
   AgxMsgSystemState,
   AgxMsgMotionState,
   AgxMsgLightState,
   AgxMsgMotionModeState,
   AgxMsgRcState,
+  // AgxLiftEnable,
   // actuator feedback
   AgxMsgActuatorHSState,
   AgxMsgActuatorLSState,
@@ -316,7 +348,12 @@ typedef enum {
   AgxMsgMotionCommandV1,
   AgxMsgValueSetCommandV1,
   AgxMsgValueSetStateV1,
-  AgxMsgActuatorStateV1
+  AgxMsgActuatorStateV1,
+  // Gole device
+  AgxMsgMiddleBoxState,
+  AgxMsgLiftState,
+  AgxMsgLiftHeartbeat,
+  AgxMsgLiftEnable
 } MsgType;
 
 typedef struct {
@@ -327,6 +364,8 @@ typedef struct {
     LightCommandMessage light_command_msg;
     BrakingCommandMessage braking_command_msg;
     MotionModeCommandMessage motion_mode_msg;
+    MiddleBoxModeCommandMessage middle_box_mode_msg;
+    LiftModeCommandMessage lift_mode_msg;
     // core state feedback
     SystemStateMessage system_state_msg;
     MotionStateMessage motion_state_msg;
@@ -359,6 +398,11 @@ typedef struct {
     ValueSetCommandMessageV1 v1_value_set_command_msg;
     ValueSetStateMessageV1 v1_value_set_state_msg;
     ActuatorStateMessageV1 v1_actuator_state_msg;
+    // Gole device
+    MiddleBoxStateMessage middle_box_state_msg;
+    LiftStateMessage lift_state_msg;
+    LiftHeartbeatMessage lift_heartbeat_msg;
+    LiftEnableMessage lift_enable_msg;
 
     MotorAngleMessage motor_angle_msg;
     MotorSpeedMessage motor_speed_msg;

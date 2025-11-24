@@ -32,6 +32,9 @@ class RangerBase : public AgilexBase<ProtocolV2Parser>, public RangerInterface {
   }
 
   // robot control
+  void SetMiddleBoxMode(uint8_t mode) { AgilexBase::SetMiddleBoxMode(mode); }
+  void SetLiftMode(uint8_t mode) { AgilexBase::SetLiftMode(mode); }
+
   void SetMotionMode(uint8_t mode) { AgilexBase::SetMotionMode(mode); }
 
   void SetMotionCommand(double linear_vel, double steer_angle,
@@ -87,6 +90,20 @@ class RangerBase : public AgilexBase<ProtocolV2Parser>, public RangerInterface {
     return ranger_actuator;
   }
 
+  GoleDeviceState GetGoleDeviceState() override {
+    auto gole_device_msg =
+        AgilexBase<ProtocolV2Parser>::GetGoleDeviceStateMsgGroup();
+
+    GoleDeviceState gole_device;
+
+    gole_device.middle_box_state = gole_device_msg.middle_box_state;
+    gole_device.lift_state = gole_device_msg.lift_state;
+    gole_device.lift_heartbeat = gole_device_msg.lift_heartbeat;
+    gole_device.lift_enable = gole_device_msg.lift_enable;
+    
+    return gole_device;
+  }
+  
   RangerCommonSensorState GetCommonSensorState() override {
     auto common_sensor =
         AgilexBase<ProtocolV2Parser>::GetCommonSensorStateMsgGroup();

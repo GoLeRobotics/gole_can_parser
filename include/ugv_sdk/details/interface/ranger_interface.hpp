@@ -45,6 +45,13 @@ struct RangerCommonSensorState {
   BmsBasicMessage bms_basic_state;
 };
 
+struct GoleDeviceState {
+  MiddleBoxStateMessage middle_box_state;
+  LiftStateMessage lift_state;
+  LiftHeartbeatMessage lift_heartbeat;
+  LiftEnableMessage lift_enable;
+};
+
 /////////////////////////////////////////////////////////////////////////
 
 struct RangerInterface {
@@ -60,6 +67,8 @@ struct RangerInterface {
 
   // robot control
   virtual void SetMotionMode(uint8_t mode) = 0;
+  virtual void SetMiddleBoxMode(uint8_t mode) = 0;
+  virtual void SetLiftMode(uint8_t mode) = 0;
   virtual void SetMotionCommand(double linear_vel, double steer_angle,
                                 double angular_vel) = 0;
   virtual void SetLightCommand(AgxLightMode f_mode, uint8_t f_value,
@@ -70,6 +79,7 @@ struct RangerInterface {
   virtual RangerCoreState GetRobotState() = 0;
   virtual RangerActuatorState GetActuatorState() = 0;
   virtual RangerCommonSensorState GetCommonSensorState() = 0;
+  virtual GoleDeviceState GetGoleDeviceState() = 0;
 };
 }  // namespace westonrobot
 

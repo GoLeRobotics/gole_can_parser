@@ -374,6 +374,40 @@ bool DecodeCanFrameV2(const struct can_frame *rx_frame, AgxMessage *msg) {
           0.001;
       break;
     }
+    case CAN_MSG_MIDDLE_BOX_INFO_ID: {
+      msg->type = AgxMsgMiddleBoxState;
+      GetMiddleBoxModeFrame *frame = (GetMiddleBoxModeFrame *)(rx_frame->data);
+      msg->body.middle_box_state_msg.motion_mode = frame->motion_mode;
+      msg->body.middle_box_state_msg.mode_changing = frame->status;
+      break;
+    }
+    case CAN_MSG_LIFT_MODE_INFO_ID: {
+      msg->type = AgxMsgLiftState;
+      GetLiftModeFrame *frame = (GetLiftModeFrame *)(rx_frame->data);
+      msg->body.lift_state_msg.motion_mode = frame->motion_mode;
+      msg->body.lift_state_msg.mode_changing = frame->status;
+      msg->body.lift_state_msg.battery_voltage =
+          (uint16_t)((uint16_t)(frame->battery_voltage.low_byte) |
+                     (uint16_t)(frame->battery_voltage.high_byte) << 8);
+      break;
+    }
+    case CAN_MSG_LIFT_HEARTBEAT_INFO_ID: {
+      msg->type = AgxMsgLiftHeartbeat;
+      GetLiftHeartbeatFrame *frame = (GetLiftHeartbeatFrame *)(rx_frame->data);
+      msg->body.lift_heartbeat_msg.heartbeat_count = frame->alive_count;
+      break;
+    }
+    case CAN_MSG_LIFT_ENABLE_INFO_ID: {
+      msg->type = AgxMsgLiftEnable;
+      GetLiftEnableFrame *frame = (GetLiftEnableFrame *)(rx_frame->data);
+      msg->body.lift_enable_msg.device_enable_status =
+          (uint32_t)(frame->device_enable_status.lsb) |
+          (uint32_t)(frame->device_enable_status.low_byte) << 8 |
+          (uint32_t)(frame->device_enable_status.high_byte) << 16 |
+          (uint32_t)(frame->device_enable_status.msb) << 24;
+      break;
+    }
+    // can 
     default:
       ret = false;
       break;
@@ -386,6 +420,37 @@ bool EncodeCanFrameV2(const AgxMessage *msg, struct can_frame *tx_frame) {
   bool ret = true;
   switch (msg->type) {
     /***************** command frame *****************/
+    case AgxMsgSetMiddleBoxModeCommand: {
+      tx_frame->can_id = CAN_MSG_MIDDLE_BOX_COMMAND_ID;
+      tx_frame->can_dlc = 8;
+
+      SetMiddleBoxModeFrame frame;
+      frame.middle_box_mode = msg->body.middle_box_mode_msg.middle_box_mode;
+      frame.reserved0 = 0;
+      frame.reserved1 = 0;
+      frame.reserved2 = 0;
+      frame.reserved3 = 0;
+      frame.reserved4 = 0;
+      frame.reserved5 = 0;
+      frame.reserved6 = 0;
+      memcpy(tx_frame->data, (uint8_t *)(&frame), tx_frame->can_dlc);
+      break;
+    }
+    case AgxMsgSetLiftModeCommand: {
+      tx_frame->can_id = CAN_MSG_LIFT_COMMAND_ID;
+      tx_frame->can_dlc = 8;
+
+      SetLiftModeFrame frame;
+      frame.lift_mode = msg->body.lift_mode_msg.lift_mode;
+      frame.reserved0 = 0;
+      frame.reserved1 = 0;
+      frame.reserved2 = 0;
+      frame.reserved3 = 0;
+      frame.reserved4 = 0;
+      frame.reserved5 = 0;
+      frame.reserved6 = 0;
+      memcpy(tx_frame->data, (uint8_t *)(&frame), tx_frame->can_dlc);
+    }
     case AgxMsgMotionCommand: {
       tx_frame->can_id = CAN_MSG_MOTION_COMMAND_ID;
       tx_frame->can_dlc = 8;

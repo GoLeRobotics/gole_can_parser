@@ -109,6 +109,18 @@ extern "C" {
 
 #define CAN_MSG_STATE_RESET_CONFIG_ID ((uint32_t)0x441)
 
+// gole group: 0x5
+#define CAN_MSG_MIDDLE_BOX_COMMAND_ID ((uint32_t)0x511)
+#define CAN_MSG_LIFT_COMMAND_ID ((uint32_t)0x521)
+
+// gole middle box and lift group: 
+#define CAN_MSG_MIDDLE_BOX_INFO_ID ((uint32_t)0x611)
+#define CAN_MSG_LIFT_MODE_INFO_ID ((uint32_t)0x621)
+#define CAN_MSG_LIFT_HEARTBEAT_INFO_ID ((uint32_t)0x721)
+#define CAN_MSG_LIFT_ENABLE_INFO_ID ((uint32_t)0x771)
+
+
+
 /*------------------------ Frame Memory Layout -------------------------*/
 
 /* No padding in the struct */
@@ -146,6 +158,71 @@ typedef struct {
   struct16_t lateral_velocity;
   struct16_t steering_angle;
 } MotionCommandFrame;
+
+typedef struct {
+  uint8_t middle_box_mode;
+  uint8_t reserved0;
+  uint8_t reserved1;
+  uint8_t reserved2;
+  uint8_t reserved3;
+  uint8_t reserved4;
+  uint8_t reserved5;
+  uint8_t reserved6;
+} SetMiddleBoxModeFrame;
+
+typedef struct {
+  uint8_t lift_mode;
+  uint8_t reserved0;
+  uint8_t reserved1;
+  uint8_t reserved2;
+  uint8_t reserved3;
+  uint8_t reserved4;
+  uint8_t reserved5;
+  uint8_t reserved6;
+} SetLiftModeFrame;
+
+
+typedef struct {
+  uint8_t motion_mode;
+  uint8_t status;
+  uint8_t reserved1;
+  uint8_t reserved2;
+  uint8_t reserved3;
+  uint8_t reserved4;
+  uint8_t reserved5;
+  uint8_t reserved6;
+} GetMiddleBoxModeFrame;
+
+typedef struct {
+  uint8_t motion_mode;
+  uint8_t status;
+  struct16_t battery_voltage;
+  uint8_t reserved0;
+  uint8_t reserved1;
+  uint8_t reserved2;
+  uint8_t reserved3;
+} GetLiftModeFrame;
+
+typedef struct {
+  uint8_t alive_count;
+  uint8_t reserved0;
+  uint8_t reserved1;
+  uint8_t reserved2;
+  uint8_t reserved3;
+  uint8_t reserved4;
+  uint8_t reserved5;
+  uint8_t reserved6;
+} GetLiftHeartbeatFrame;
+
+// TODO
+typedef struct {
+  struct32_t device_enable_status;
+  uint8_t reserved0;
+  uint8_t reserved1;
+  uint8_t reserved2;
+  uint8_t reserved3;
+} GetLiftEnableFrame;
+
 
 #define LIGHT_ENABLE_CMD_CTRL ((uint8_t)0x01)
 #define LIGHT_DISABLE_CMD_CTRL ((uint8_t)0x00)

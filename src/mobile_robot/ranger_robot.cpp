@@ -44,6 +44,18 @@ ProtocolVersion RangerRobot::GetParserProtocolVersion() {
 }
 
 // robot control
+void RangerRobot::SetMiddleBoxMode(uint8_t mode) {
+  auto ranger = dynamic_cast<RangerInterface*>(robot_);
+  return ranger->SetMiddleBoxMode(mode);
+}
+
+// robot control
+void RangerRobot::SetLiftMode(uint8_t mode) {
+  auto ranger = dynamic_cast<RangerInterface*>(robot_);
+  return ranger->SetLiftMode(mode);
+}
+
+// robot control
 void RangerRobot::SetMotionMode(uint8_t mode) {
   auto ranger = dynamic_cast<RangerInterface*>(robot_);
   return ranger->SetMotionMode(mode);
@@ -74,5 +86,10 @@ RangerActuatorState RangerRobot::GetActuatorState() {
 RangerCommonSensorState RangerRobot::GetCommonSensorState() {
   auto ranger = dynamic_cast<RangerInterface*>(robot_);
   return ranger->GetCommonSensorState();
+}
+
+GoleDeviceState RangerRobot::GetGoleDeviceState() {
+  auto ranger = dynamic_cast<RangerInterface*>(robot_);
+  return ranger->GetGoleDeviceState();
 }
 }  // namespace westonrobot

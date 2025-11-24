@@ -50,6 +50,14 @@ struct CommonSensorStateMsgGroup {
   BmsExtendedMessage bms_extend_state;
 };
 
+struct GoleDeviceStateMsgGroup {
+  SdkTimePoint time_stamp;
+  MiddleBoxStateMessage middle_box_state;
+  LiftStateMessage lift_state;
+  LiftHeartbeatMessage lift_heartbeat;
+  LiftEnableMessage lift_enable;
+};
+
 template <typename ParserType>
 class AgilexBase : public RobotCommonInterface {
  public:
@@ -155,6 +163,30 @@ class AgilexBase : public RobotCommonInterface {
   }
 
   // motion mode change
+  void SetMiddleBoxMode(uint8_t mode) {
+    if (can_ != nullptr && can_->IsOpened()) {
+      AgxMessage msg;
+      msg.type = AgxMsgSetMiddleBoxModeCommand;
+      msg.body.middle_box_mode_msg.middle_box_mode = mode;
+      // send to can bus
+      can_frame frame;
+      if (parser_.EncodeMessage(&msg, &frame)) can_->SendFrame(frame);
+    }
+  }
+
+  // motion mode change
+  void SetLiftMode(uint8_t mode) {
+    if (can_ != nullptr && can_->IsOpened()) {
+      AgxMessage msg;
+      msg.type = AgxMsgSetLiftModeCommand;
+      msg.body.lift_mode_msg.lift_mode = mode;
+
+      // send to can bus
+      can_frame frame;
+      if (parser_.EncodeMessage(&msg, &frame)) can_->SendFrame(frame);
+    }
+  }
+
   void SetMotionMode(uint8_t mode) {
     if (can_ != nullptr && can_->IsOpened()) {
       AgxMessage msg;
@@ -188,6 +220,11 @@ class AgilexBase : public RobotCommonInterface {
     return common_sensor_state_msgs_;
   }
 
+  GoleDeviceStateMsgGroup GetGoleDeviceStateMsgGroup() {
+    std::lock_guard<std::mutex> guard(gole_device_state_mtx_);
+    return gole_device_state_msgs_;
+  }
+
  protected:
   ParserType parser_;
 
@@ -206,6 +243,10 @@ class AgilexBase : public RobotCommonInterface {
   /* feedback group 3: common sensor */
   std::mutex common_sensor_state_mtx_;
   CommonSensorStateMsgGroup common_sensor_state_msgs_;
+
+  /* feedback group 4: Gole devices */
+  std::mutex gole_device_state_mtx_;
+  GoleDeviceStateMsgGroup gole_device_state_msgs_;
 
   std::mutex version_str_buf_mtx_;
   std::string version_string_buffer_;
@@ -281,6 +322,7 @@ class AgilexBase : public RobotCommonInterface {
       UpdateActuatorState(status_msg);
       UpdateCommonSensorState(status_msg);
       UpdateResponseVersion(status_msg);
+      UpdateGoleDevice(status_msg);
     }
   }
 
@@ -405,6 +447,35 @@ class AgilexBase : public RobotCommonInterface {
           if (data < 32 || data > 126) data = 32;
           version_string_buffer_ += data;
         }
+        break;
+      }
+      default:
+        break;
+    }
+  }
+
+  void UpdateGoleDevice(const AgxMessage &status_msg) {
+    std::lock_guard<std::mutex> guard(gole_device_state_mtx_);
+    gole_device_state_msgs_.time_stamp = SdkClock::now();
+    
+    switch (status_msg.type) {
+      case AgxMsgMiddleBoxState: {
+          gole_device_state_msgs_.middle_box_state.motion_mode = status_msg.body.middle_box_state_msg.motion_mode;
+          gole_device_state_msgs_.middle_box_state.mode_changing = status_msg.body.middle_box_state_msg.mode_changing;
+        break;
+      }
+      case AgxMsgLiftState: {
+          gole_device_state_msgs_.lift_state.motion_mode = status_msg.body.lift_state_msg.motion_mode;
+          gole_device_state_msgs_.lift_state.mode_changing = status_msg.body.lift_state_msg.mode_changing;
+          gole_device_state_msgs_.lift_state.battery_voltage = status_msg.body.lift_state_msg.battery_voltage; // TODO battery endian 처리 봐야 할듯
+        break;
+      }
+      case AgxMsgLiftHeartbeat: {
+          gole_device_state_msgs_.lift_heartbeat.heartbeat_count = status_msg.body.lift_heartbeat_msg.heartbeat_count;
+        break;
+      }
+      case AgxMsgLiftEnable: {
+          gole_device_state_msgs_.lift_enable.device_enable_status = status_msg.body.lift_enable_msg.device_enable_status;
         break;
       }
       default:
